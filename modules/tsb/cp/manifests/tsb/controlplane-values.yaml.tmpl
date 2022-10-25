@@ -1,0 +1,42 @@
+image:
+  tag: ${tsb_version}
+  registry: ${registry}
+secrets:
+  elasticsearch:
+    username: ${es_username}
+    password: ${es_password}
+  clusterServiceAccount:
+    clusterFQN: ${serviceaccount_clusterfqn}
+    JWK: '${serviceaccount_jwk}'
+spec:
+  hub: ${registry}
+  telemetryStore:
+    elastic:
+      host: ${es_host}
+      port: 9200
+      version: 7
+      protocol: https
+      selfSigned: true
+  managementPlane:
+    host: ${tsb_fqdn}
+    port: 8443
+    clusterName: ${cluster_name}
+    selfSigned: true
+  components:
+    istio:
+      kubeSpec:
+        deployment:
+          env:
+            - name: AUTO_RELOAD_PLUGIN_CERTS
+              value: "true"
+    xcp:
+      centralAuthMode: JWT
+    gitops:
+      enabled: true
+      reconcileInterval: 600s
+    internalCertProvider:
+        certManager:
+          managed: EXTERNAL
+    oap:
+      streamingLogEnabled: true  
+  meshExpansion: {}
