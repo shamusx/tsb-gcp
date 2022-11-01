@@ -9,7 +9,7 @@ terraform_output_args = -json
 # Functions
 
 .PHONY: all
-all: tsb
+all: tsb_class
 
 .PHONY: help
 help : Makefile
@@ -18,11 +18,6 @@ help : Makefile
 ## init					 	 terraform init
 .PHONY: init
 init:
-	@echo "Please refer to the latest instructions and terraform.tfvars.json file format at https://github.com/smarunich/tetrate-service-bridge-sandbox#usage"
-
-## k8s						 deploys k8s cluster for MP and N-number of CPs(*) 
-.PHONY: k8s
-k8s: azure_k8s aws_k8s gcp_k8s
 
 ## gcp_k8s					 deploys GKE K8s cluster (CPs only)
 .PHONY: gcp_k8s_class
@@ -36,7 +31,7 @@ gcp_k8s_class: init
 		'
 
 .PHONY: tsb_mp_class
-tsb_mp_class:
+tsb_mp:
 	@echo "Refreshing k8s access tokens..."
 	@make gcp_k8s_class
 	@echo "Deploying TSB Management Plane..."
@@ -58,7 +53,7 @@ tsb_mp_class:
 	'
 ## tsb_cp	                   
 .PHONY: tsb_cp_class
-tsb_cp_class:
+tsb_cp:
 	@echo "Refreshing k8s access tokens..."
 	@echo "Onboarding clusters, i.e. TSB CP rollouts..."
 	@make gcp_k8s_class
@@ -82,9 +77,24 @@ tsb_cp_class:
 	cd "../.."; \
 	'
 
+.PHONY: tsb_class
+tsb_class: gcp_k8s_class tsb_mp tsb_cp
+
 ## destroy					 destroy the environment
 .PHONY: destroy
 destroy:
+	@make gcp_k8s_class
+	@/bin/sh -c '\
+		student_count=`jq -r '.student.count' terraform.tfvars.json`; \
+		cluster_count=`jq -r '.student.clusters' terraform.tfvars.json`; \
+		for (( index = 0; index < $$student_count; ++index )); do \
+		let cluster_id=index*cluster_count; \
+		cd "tsb/mp"; \
+		terraform workspace select student_$$index; \
+		terraform destroy ${terraform_apply_args} -target=module.es -target=module.tsb_mp -target=module.gcp_register_fqdn -var-file="../../terraform.tfvars.json" -var=cluster_id=$$cluster_id -var=student_count_index=$$index; \
+		done; \
+		terraform workspace select default; \
+	'
 	@/bin/sh -c '\
 		cd "tsb/cp"; \
 		rm -rf terraform.tfstate.d/; \

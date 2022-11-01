@@ -50,6 +50,9 @@ module "gcp_k8s" {
   name_prefix  = "tsbmp-${var.name_prefix}-${count.index % var.student.clusters + 1}"
   cluster_name = "tsbmp-${var.name_prefix}-${random_string.random_prefix.result}-${floor(count.index % var.student.clusters + 1)}"
   project_id   = "${var.name_prefix}-${random_string.random_prefix.result}-${floor(count.index / var.student.clusters + 1)}"
+  jumpbox_host      = module.gcp_jumpbox["${floor(count.index / var.student.clusters)}"].public_ip
+  jumpbox_username  = var.jumpbox_username
+  jumpbox_pkey      = module.gcp_jumpbox["${floor(count.index / var.student.clusters)}"].pkey
   region       = var.gcp_region
   k8s_version  = var.gcp_gke_k8s_version
   output_path  = var.output_path

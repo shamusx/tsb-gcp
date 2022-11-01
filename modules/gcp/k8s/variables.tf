@@ -8,7 +8,6 @@ variable "cluster_name" {
 
 variable "project_id" {
 }
-
 variable "region" {
 }
 
@@ -20,4 +19,16 @@ variable "output_path" {
 
 variable "cert-manager_enabled" {
   default = true
+}
+
+variable "jumpbox_host" {
+
+}
+
+variable "jumpbox_username" {
+
+}
+
+variable "jumpbox_pkey" {
+  
 }

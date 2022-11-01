@@ -36,17 +36,17 @@ resource "null_resource" "jumpbox_tctl" {
     })
     destination = "${var.cluster_name}-cluster.yaml"
   }
-  provisioner "file" {
-    content = templatefile("${path.module}/manifests/tctl/tctl-controlplane.sh.tmpl", {
-      cluster_name = var.cluster_name
-      tsb_mp_host  = var.tsb_mp_host
-      tsb_org      = var.tsb_org
-      tsb_tenant   = "tetrate"
-      tsb_username = var.tsb_username
-      tsb_password = var.tsb_password
-    })
-    destination = "${var.cluster_name}-tctl-controlplane.sh"
-  }
+  # provisioner "file" {
+  #   content = templatefile("${path.module}/manifests/tctl/tctl-controlplane.sh.tmpl", {
+  #     cluster_name = var.cluster_name
+  #     tsb_mp_host  = var.tsb_mp_host
+  #     tsb_org      = var.tsb_org
+  #     tsb_tenant   = "tetrate"
+  #     tsb_username = var.tsb_username
+  #     tsb_password = var.tsb_password
+  #   })
+  #   destination = "${var.cluster_name}-tctl-controlplane.sh"
+  # }
 
   provisioner "file" {
     content = templatefile("${path.module}/manifests/tsb/controlplane-values.yaml-prep.tmpl", {
@@ -63,11 +63,11 @@ resource "null_resource" "jumpbox_tctl" {
   destination = "${var.cluster_name}-controlplane.yaml"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "sh ${var.cluster_name}-tctl-controlplane.sh"
-    ]
-  }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "sh ${var.cluster_name}-tctl-controlplane.sh"
+  #   ]
+  # }
 
   # file-remote is not supported yet, https://github.com/hashicorp/terraform/issues/3379
 #   provisioner "local-exec" {

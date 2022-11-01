@@ -47,7 +47,6 @@ module "tsb_mp" {
 }
 
 module "gcp_register_fqdn" {
-  count    = var.dns_provider == "gcp" ? 1 : 0
   source   = "../../modules/gcp/register_fqdn"
   dns_zone = "gcp.cx.tetrate.info"
   fqdn     = "${var.name_prefix}${var.student_count_index}.${var.domain}"

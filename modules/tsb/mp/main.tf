@@ -19,8 +19,8 @@ provider "kubernetes" {
   token                  = var.k8s_client_token
 }
 
-resource "time_sleep" "warmup_90_seconds" {
-  create_duration = "90s"
+resource "time_sleep" "warmup_30_seconds" {
+  create_duration = "60s"
 }
 
 data "kubectl_path_documents" "manifests_certs" {
@@ -48,7 +48,7 @@ data "kubernetes_secret" "selfsigned_ca" {
     name      = "selfsigned-ca"
     namespace = "cert-manager"
   }
-  depends_on = [time_sleep.warmup_90_seconds]
+  depends_on = [time_sleep.warmup_30_seconds]
 }
 
 data "kubernetes_secret" "tsb_server_cert" {
@@ -56,7 +56,7 @@ data "kubernetes_secret" "tsb_server_cert" {
     name      = "tsb-server-cert"
     namespace = "cert-manager"
   }
-  depends_on = [time_sleep.warmup_90_seconds]
+  depends_on = [time_sleep.warmup_30_seconds]
 }
 
 data "kubernetes_secret" "istiod_cacerts" {
@@ -64,7 +64,7 @@ data "kubernetes_secret" "istiod_cacerts" {
     name      = "istiod-cacerts"
     namespace = "cert-manager"
   }
-  depends_on = [time_sleep.warmup_90_seconds]
+  depends_on = [time_sleep.warmup_30_seconds]
 }
 
 resource "tls_private_key" "iamsigningkey" {
@@ -138,9 +138,9 @@ resource "helm_release" "managementplane" {
 
 }
 
-resource "time_sleep" "wait_240_seconds" {
+resource "time_sleep" "wait_60_seconds" {
   depends_on      = [helm_release.managementplane]
-  create_duration = "240s"
+  create_duration = "60s"
 }
 
 data "kubernetes_service" "tsb" {
@@ -148,5 +148,5 @@ data "kubernetes_service" "tsb" {
     name      = "envoy"
     namespace = "tsb"
   }
-  depends_on = [time_sleep.wait_240_seconds]
+  depends_on = [time_sleep.wait_60_seconds]
 }

@@ -115,5 +115,5 @@ variable "cert-manager_enabled" {
 }
 
 variable "dns_provider" {
-  default = "aws"
+  default = "gcp"
 }

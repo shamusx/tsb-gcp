@@ -14,11 +14,24 @@ resource "tls_private_key" "generated" {
   rsa_bits  = 4096
 }
 
-data "google_compute_default_service_account" "default" {
+# Create service account and add roles to manage k8s clusters in same project
+resource "google_service_account" "jumpbox" {
+  account_id = "${var.name_prefix}-sa"
   project = var.project_id
-  depends_on = [
-    data.google_compute_subnetwork.wait_for_compute_apis_to_be_ready
-  ]
+}
+
+resource "google_project_iam_member" "project" {
+  project = var.project_id
+
+  role    = "roles/editor"
+  member  = format("serviceAccount:%s", google_service_account.jumpbox.email)
+}
+
+resource "google_project_iam_member" "user_role_editor" {
+  project = var.project_id
+
+  role = "roles/container.serviceAgent"
+  member  = format("serviceAccount:%s", google_service_account.jumpbox.email)
 }
 
 resource "google_compute_instance" "jumpbox" {
@@ -26,7 +39,7 @@ resource "google_compute_instance" "jumpbox" {
   name         = "${var.name_prefix}-jumpbox"
   machine_type = "n1-standard-2"
   zone         = data.google_compute_zones.available.names[0]
-
+  # allow_stopping_for_update = true  # Used for testing only
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-minimal-2204-lts"
@@ -54,7 +67,7 @@ resource "google_compute_instance" "jumpbox" {
   }
 
   service_account {
-    email  = data.google_compute_default_service_account.default.email
+    email  = google_service_account.jumpbox.email
     scopes = ["cloud-platform"]
   }
 }

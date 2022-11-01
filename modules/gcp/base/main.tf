@@ -10,7 +10,6 @@ resource "google_project_service" "containerregistry" {
   disable_dependent_services = true
 }
 
-
 resource "time_sleep" "wait_60_seconds" {
   depends_on = [
     google_project_service.compute,
